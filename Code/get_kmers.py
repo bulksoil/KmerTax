@@ -5,6 +5,7 @@ from optparse import OptionParser
 from collections import Counter
 import pandas as pd
 import gzip
+import re
 
 def opt_get():
 	parser = OptionParser()
@@ -27,7 +28,9 @@ def break_into_kmers(info, k_size):
 	header, sequence = info
 	kmers = []
 	for i in range(len(sequence) - k_size):
-		kmers.append(sequence[i:i+k_size])
+		kmer = sequence[i:i+k_size]
+		if re.search('^[ATCGatcg]*$', kmer):
+			kmers.append(kmer)
 	return(Counter(kmers))
 
 
@@ -52,7 +55,9 @@ def main():
     		sys.stdout.flush()
 
 		if fasta_info[0] == "none":
-			df = pd.DataFrame(kmer_store).transpose().fillna(0).to_csv(out_file, sep = '\t')
+			df = pd.DataFrame(kmer_store).transpose().fillna(0)
+			df.index.names = ["OTU_ID"]
+			df.to_csv(out_file, sep = '\t')
 			break
 
 main()
