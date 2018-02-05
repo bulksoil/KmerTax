@@ -1,0 +1,35 @@
+---
+title: "Kmer Analysis"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+kmers4 <- read_tsv("~/Python_Projects/KmerTax/Data/V4_K4.tsv", col_types = cols(OTU_ID = col_character()))
+kmers5 <- read_tsv("~/Python_Projects/KmerTax/Data/V4_K5.tsv", col_types = cols(OTU_ID = col_character()))
+tax <- read_rds("~/RMB/Reference/gg_otus_tax.rds")
+tax <- tax[match(kmers4$OTU_ID, tax$variable),]
+
+dim(kmers5)
+```
+
+```{r}
+pc <- princomp(kmers5[,-1])
+pc_axes <- cbind(tax, pc$scores)
+phy_cent <- pc_axes %>% 
+  group_by(Phylum)
+
+pc_axes %>% 
+  filter(Phylum == "Bacteroidetes") %>% 
+  ggplot(aes(Comp.1, Comp.2, color = Class)) +
+  geom_point(size = 0.1, alpha = 0.3) +
+  theme_minimal() +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)),
+         size = guide_legend(override.aes = list(size = 1)))
+head(pc_axes)
+```
+
